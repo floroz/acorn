@@ -16,6 +16,8 @@ export const Symbols: Record<string, TokenType> = {
     ';': 'EndOfLine',
     '{': 'OpenBrace',
     '}': 'CloseBrace',
+    ",": 'Comma',
+    "=>": "ArrowFunction",
 }
 
 export type TokenType =
@@ -32,6 +34,8 @@ export type TokenType =
     | 'CloseParent'
     | 'OpenBrace'
     | 'CloseBrace'
+    | 'Comma'
+    | 'ArrowFunction'
     | (typeof RESERVED_KEYWORDS_DICTIONARY)[keyof typeof RESERVED_KEYWORDS_DICTIONARY]
 
     export const RESERVED_KEYWORDS_DICTIONARY = {

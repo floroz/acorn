@@ -10,7 +10,22 @@ export function tokenizer(source: string): Token[] {
     let current = 0
 
     while (current < source.length) {
-        let char = source[current]
+      let char = source[current]
+      
+      // arrow function is a special symbol since it's composed of two characters
+      if (char === '=') {
+        const nextChar = source[current + 1];
+
+        if (nextChar === '>') {
+          tokens.push({ type: 'ArrowFunction', value: '=>' });
+          current += 2;
+          continue;
+        } else {
+          tokens.push({ type: 'Equals', value: char })
+          current++
+          continue
+        }
+      }
 
         if (Symbols.hasOwnProperty(char)) {
             tokens.push({ type: Symbols[char], value: char })
@@ -47,6 +62,7 @@ export function tokenizer(source: string): Token[] {
             }
 
             const isReservedKeyword = ReservedKeywordsMap.has(value)
+          
             if (isReservedKeyword) {
                 const keyword = ReservedKeywordsMap.get(value)
 
