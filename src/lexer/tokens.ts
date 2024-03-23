@@ -1,4 +1,40 @@
-export const RESERVED_KEYWORDS_DICTIONARY = {
+
+export type Token = {
+    type: TokenType
+    value: string
+}
+
+export const Symbols: Record<string, TokenType> = {
+    '(': 'OpenParent',
+    ')': 'CloseParent',
+    '=': 'Equals',
+    '+': 'Adds',
+    '-': 'Subtracts',
+    '*': 'Multiplies',
+    '/': 'Divides',
+    '%': 'Modulus',
+    ';': 'EndOfLine',
+    '{': 'OpenBrace',
+    '}': 'CloseBrace',
+}
+
+export type TokenType =
+    | 'Number'
+    | 'Identifier'
+    | 'Equals'
+    | 'Adds'
+    | 'Subtracts'
+    | 'Multiplies'
+    | 'Divides'
+    | 'Modulus'
+    | 'EndOfLine'
+    | 'OpenParent'
+    | 'CloseParent'
+    | 'OpenBrace'
+    | 'CloseBrace'
+    | (typeof RESERVED_KEYWORDS_DICTIONARY)[keyof typeof RESERVED_KEYWORDS_DICTIONARY]
+
+    export const RESERVED_KEYWORDS_DICTIONARY = {
     abstract: 'Abstract',
     as: 'As',
     async: 'Async',

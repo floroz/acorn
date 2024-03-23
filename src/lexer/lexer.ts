@@ -1,8 +1,8 @@
-import { ReservedKeywordsMap } from './reserved-keywords'
-import { Token } from './types'
+import { Symbols, Token, ReservedKeywordsMap } from './tokens'
 
 const ANY_DIGIT_REGEX = /\d/
 const ANY_ALPHABETIC_REGEX = /[a-zA-Z]/
+const SKIPPABLE = [' ', '\n', '\t']
 
 export function tokenizer(source: string): Token[] {
     const tokens: Token[] = []
@@ -12,49 +12,13 @@ export function tokenizer(source: string): Token[] {
     while (current < source.length) {
         let char = source[current]
 
-        if (char === '(') {
-            tokens.push({ type: 'OpenParent', value: '(' })
+        if (Symbols.hasOwnProperty(char)) {
+            tokens.push({ type: Symbols[char], value: char })
             current++
             continue
         }
-
-        if (char === ')') {
-            tokens.push({ type: 'CloseParent', value: ')' })
-            current++
-            continue
-        }
-
-        if (char === '=') {
-            tokens.push({ type: 'Equals', value: '=' })
-            current++
-            continue
-        }
-
-        if (char === '+') {
-            tokens.push({ type: 'Adds', value: '+' })
-            current++
-            continue
-        }
-
-        if (char === '-') {
-            tokens.push({ type: 'Subtracts', value: '-' })
-            current++
-            continue
-        }
-
-        if (char === '*') {
-            tokens.push({ type: 'Multiplies', value: '*' })
-            current++
-            continue
-        }
-
-        if (char === '/') {
-            tokens.push({ type: 'Divides', value: '/' })
-            current++
-            continue
-        }
-
-        if (char === ' ') {
+      
+        if (SKIPPABLE.includes(char)) {
             current++
             continue
         }
