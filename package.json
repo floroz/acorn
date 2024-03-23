@@ -1,0 +1,16 @@
+{
+  "name": "custom-compiler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "vite-node main.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "typescript": "^5.4.3",
+    "vite-node": "^1.4.0"
+  }
+}
