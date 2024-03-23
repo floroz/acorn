@@ -1,3 +1,10 @@
-import { tokenizer } from "./lexer";
+import { tokenizer } from './src/lexer/lexer'
 
-console.log(tokenizer('let a = (1 + 2) * 3'));
+// Should work
+// console.log(tokenizer('let a = (1 + 2) * 3'));
+console.log(tokenizer('123'))
+console.log(tokenizer('let 123 = 0'))
+console.log(tokenizer('lt 123 = 0'))
+// console.log(tokenizer('let a = 123'));
+// console.log(tokenizer('let a = 123 + 456'));
+// console.log(tokenizer('let a = 123 + 456 * 789'));

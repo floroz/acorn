@@ -2,14 +2,18 @@
   "name": "custom-compiler",
   "version": "1.0.0",
   "description": "",
+  "type": "module",
   "main": "index.js",
   "scripts": {
-    "compile": "vite-node main.ts"
+    "compile": "vite-node main.ts",
+    "lint": "prettier --check .",
+    "lint:fix": "prettier --write ."
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "prettier": "^3.2.5",
     "typescript": "^5.4.3",
     "vite-node": "^1.4.0"
   }
