@@ -4,21 +4,35 @@ export type Token = {
     value: string
 }
 
-export const Symbols: Record<string, TokenType> = {
-    '(': 'OpenParent',
-    ')': 'CloseParent',
-    '=': 'Equals',
-    '+': 'Adds',
-    '-': 'Subtracts',
-    '*': 'Multiplies',
-    '/': 'Divides',
-    '%': 'Modulus',
-    ';': 'EndOfLine',
-    '{': 'OpenBrace',
-    '}': 'CloseBrace',
-    ",": 'Comma',
-    "=>": "ArrowFunction",
-}
+export const SPECIAL_CHAR_DICTIONARY
+    : Record<SpecialCharacters, TokenType> = {
+        '(': 'OpenParent',
+        ')': 'CloseParent',
+        '=': 'Equals',
+        '+': 'Adds',
+        '-': 'Subtracts',
+        '*': 'Multiplies',
+        '/': 'Divides',
+        '%': 'Modulus',
+        ';': 'EndOfLine',
+        '{': 'OpenBrace',
+        '}': 'CloseBrace',
+        '[': 'OpenSquareBracket',
+        ']': 'CloseSquareBracket',
+        ",": 'Comma',
+        "=>": "ArrowFunction",
+    } as const;
+
+export type Operators = '+' | '-' | '*' | '/' | '%'
+export type Parenthesis = '(' | ')'
+export type SquareBrackets = '[' | ']'
+export type Braces = '{' | '}'
+export type Comma = ','
+export type Equals = '='
+export type EndOfLine = ';'
+export type ArrowFunction = "=>"
+
+export type SpecialCharacters = Parenthesis | Operators | Braces | Comma | ArrowFunction | SquareBrackets | Equals | EndOfLine
 
 export type TokenType =
     | 'Number'
@@ -34,8 +48,11 @@ export type TokenType =
     | 'CloseParent'
     | 'OpenBrace'
     | 'CloseBrace'
+    | 'OpenSquareBracket'
+    | 'CloseSquareBracket'
     | 'Comma'
     | 'ArrowFunction'
+    | "EOF"
     | (typeof RESERVED_KEYWORDS_DICTIONARY)[keyof typeof RESERVED_KEYWORDS_DICTIONARY]
 
     export const RESERVED_KEYWORDS_DICTIONARY = {
@@ -106,7 +123,3 @@ export type TokenType =
     with: 'With',
     yield: 'Yield',
 } as const
-
-export const ReservedKeywordsMap = new Map(
-    Object.entries(RESERVED_KEYWORDS_DICTIONARY)
-)

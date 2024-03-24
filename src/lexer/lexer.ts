@@ -1,4 +1,4 @@
-import { Symbols, Token, ReservedKeywordsMap } from './tokens'
+import { SPECIAL_CHAR_DICTIONARY, Token, RESERVED_KEYWORDS_DICTIONARY, TokenType } from '../tokens/tokens'
 
 const ANY_DIGIT_REGEX = /\d/
 const ANY_ALPHABETIC_REGEX = /[a-zA-Z]/
@@ -27,8 +27,8 @@ export function tokenizer(source: string): Token[] {
         }
       }
 
-        if (Symbols.hasOwnProperty(char)) {
-            tokens.push({ type: Symbols[char], value: char })
+        if (SPECIAL_CHAR_DICTIONARY.hasOwnProperty(char)) {
+            tokens.push({ type: SPECIAL_CHAR_DICTIONARY[char as keyof typeof SPECIAL_CHAR_DICTIONARY], value: char })
             current++
             continue
         }
@@ -61,16 +61,16 @@ export function tokenizer(source: string): Token[] {
                 char = source[++current]
             }
 
-            const isReservedKeyword = ReservedKeywordsMap.has(value)
+            const isReservedKeyword = RESERVED_KEYWORDS_DICTIONARY.hasOwnProperty(value)
           
             if (isReservedKeyword) {
-                const keyword = ReservedKeywordsMap.get(value)
+                const keywordType = RESERVED_KEYWORDS_DICTIONARY[value as keyof typeof RESERVED_KEYWORDS_DICTIONARY];
 
-                if (!keyword) {
+                if (!keywordType) {
                     throw new Error(`Invalid keyword: ${value}`)
                 }
 
-                tokens.push({ type: keyword, value })
+                tokens.push({ type: keywordType, value })
             } else {
                 tokens.push({ type: 'Identifier', value })
             }
@@ -80,6 +80,8 @@ export function tokenizer(source: string): Token[] {
 
         throw new Error(`Unrecognized token: ${char}`)
     }
+
+    tokens.push({ type: 'EOF', value: '' })
 
     return tokens
 }
