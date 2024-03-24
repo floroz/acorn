@@ -1,92 +1,130 @@
 
 export type NodeType = "Program" | "NumericLiteral" | "Identifier" | "BinaryExpression" | "UnaryExpression" | "AssignmentExpression" | "CallExpression" | "FunctionDeclaration" | "VariableDeclaration" | "IfStatement" | "WhileStatement" | "ForStatement" | "ReturnStatement" | "BlockStatement";
 
-export interface Statement {
-    type: NodeType
+abstract class Statement {
+  constructor(public type: NodeType) {
+    }
 }
 
-export interface Program extends Statement {
-    type: "Program"
-    body: Statement[]
+export class Program extends Statement {
+  constructor(public body: Statement[]){
+    super("Program")
+  }
 }
 
-export interface NumericLiteral extends Statement {
-    type: "NumericLiteral"
-    value: number
+export class NumericLiteral extends Statement {
+  constructor(public value: number) {
+    super("NumericLiteral")
+  }
 }
 
-export interface Identifier extends Statement {
-    type: "Identifier"
-    name: string
+export class Identifier extends Statement {
+  constructor(public name: string){
+    super("Identifier")
+  }
 }
 
-export interface BinaryExpression extends Statement {
-    type: "BinaryExpression"
-  operator: string;
-    left: Statement
-    right: Statement
+export class BinaryExpression extends Statement {
+  constructor(
+    public operator: string,
+    public left: Statement,
+    public right: Statement
+  ){
+    super("BinaryExpression")
+  }
 }
 
-export interface UnaryExpression extends Statement {
-    type: "UnaryExpression"
-    operator: string
-    argument: Statement
+export class UnaryExpression extends Statement {
+  constructor(
+    public operator: string,
+    public argument: Statement
+  ){
+    super("UnaryExpression")
+  }
 }
 
-export interface AssignmentExpression extends Statement {
-    type: "AssignmentExpression"
-    operator: string
-    left: Statement
-    right: Statement
+export class AssignmentExpression extends Statement {
+  constructor(
+    public operator: string,
+    public left: Statement,
+    public right: Statement
+  ){
+    super("AssignmentExpression")
+  }
 }
 
-export interface CallExpression extends Statement {
-    type: "CallExpression"
-    callee: Statement
-    arguments: Statement[]
+export class CallExpression extends Statement {
+  constructor(
+    public callee: Statement,
+    public args: Statement[]
+  ){
+    super("CallExpression")
+  }
 }
 
-export interface FunctionDeclaration extends Statement {
-    type: "FunctionDeclaration"
-    id: Statement
-    params: Statement[]
-    body: Statement
+export class FunctionDeclaration extends Statement {
+  constructor(
+    public id: Statement,
+    public params: Statement[],
+    public body: Statement
+  ){
+    super("FunctionDeclaration")
+  }
 }
 
-export interface VariableDeclaration extends Statement {
-    type: "VariableDeclaration"
-    id: Statement
-    init: Statement
+export class VariableDeclaration extends Statement {
+  constructor(
+    public id: Statement,
+    public init: Statement
+  ){
+    super("VariableDeclaration")
+  }
 }
 
-export interface IfStatement extends Statement {
-    type: "IfStatement"
-    test: Statement
-    consequent: Statement
-    alternate: Statement
+export class IfStatement extends Statement {
+  constructor(
+    public test: Statement,
+    public consequent: Statement,
+    public alternate: Statement
+  ){
+    super("IfStatement")
+  }
 }
 
-export interface WhileStatement extends Statement {
-    type: "WhileStatement"
-    test: Statement
-    body: Statement
+export class WhileStatement extends Statement {
+  constructor(
+    public test: Statement,
+    public body: Statement
+  ){
+    super("WhileStatement")
+  }
+  
 }
 
-export interface ForStatement extends Statement {
-    type: "ForStatement"
-    init: Statement
-    test: Statement
-    update: Statement
-    body: Statement
+export class ForStatement extends Statement {
+  constructor(
+    public init: Statement,
+    public test: Statement,
+    public update: Statement,
+    public body: Statement
+  ){
+    super("ForStatement")
+  } 
 }
 
-export interface ReturnStatement extends Statement {
-    type: "ReturnStatement"
-    argument: Statement
+export class ReturnStatement extends Statement {
+  constructor(
+    public argument: Statement
+  ){
+    super("ReturnStatement")
+  }
 }
 
-export interface BlockStatement extends Statement {
-    type: "BlockStatement"
-    body: Statement[]
+export class BlockStatement extends Statement {
+  constructor(
+    public body: Statement[]
+  ){
+    super("BlockStatement")
+  }
 }
 
