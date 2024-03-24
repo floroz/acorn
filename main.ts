@@ -1,20 +1,15 @@
-import fs from 'node:fs';
-import { tokenizer } from './src/lexer/lexer'
+import fs from 'node:fs'
+import { Parser } from './src/parser/parser'
 
-// Should work
-// console.log(tokenizer('let a = (1 + 2) * 3'));
-// console.log(tokenizer('123'))
-// console.log(tokenizer('let 123 = 0'))
-// console.log(tokenizer('lt 123 = 0'))
-// console.log(tokenizer('let a = 123'));
-// console.log(tokenizer('let a = 123 + 456'));
-// console.log(tokenizer('let a = 123 + 456 * 789'));
-
-fs.readFile('./custom.floroz', 'utf8', (err, data) => { 
+fs.readFile('./custom.floroz', 'utf8', (err, data) => {
     if (err) {
         console.error(err)
         return
     }
 
-    console.log(tokenizer(data))
-});
+    const parser = new Parser()
+
+    console.log(parser.parse(data));
+})
+
+

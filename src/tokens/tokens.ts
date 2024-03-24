@@ -1,27 +1,25 @@
-
 export type Token = {
     type: TokenType
     value: string
 }
 
-export const SPECIAL_CHAR_DICTIONARY
-    : Record<SpecialCharacters, TokenType> = {
-        '(': 'OpenParent',
-        ')': 'CloseParent',
-        '=': 'Equals',
-        '+': 'Adds',
-        '-': 'Subtracts',
-        '*': 'Multiplies',
-        '/': 'Divides',
-        '%': 'Modulus',
-        ';': 'EndOfLine',
-        '{': 'OpenBrace',
-        '}': 'CloseBrace',
-        '[': 'OpenSquareBracket',
-        ']': 'CloseSquareBracket',
-        ",": 'Comma',
-        "=>": "ArrowFunction",
-    } as const;
+export const SPECIAL_CHAR_DICTIONARY: Record<SpecialCharacters, TokenType> = {
+    '(': 'OpenParent',
+    ')': 'CloseParent',
+    '=': 'Equals',
+    '+': 'Adds',
+    '-': 'Subtracts',
+    '*': 'Multiplies',
+    '/': 'Divides',
+    '%': 'Modulus',
+    ';': 'EndOfLine',
+    '{': 'OpenBrace',
+    '}': 'CloseBrace',
+    '[': 'OpenSquareBracket',
+    ']': 'CloseSquareBracket',
+    ',': 'Comma',
+    '=>': 'ArrowFunction',
+} as const
 
 export type Operators = '+' | '-' | '*' | '/' | '%'
 export type Parenthesis = '(' | ')'
@@ -30,12 +28,22 @@ export type Braces = '{' | '}'
 export type Comma = ','
 export type Equals = '='
 export type EndOfLine = ';'
-export type ArrowFunction = "=>"
+export type ArrowFunction = '=>'
 
-export type SpecialCharacters = Parenthesis | Operators | Braces | Comma | ArrowFunction | SquareBrackets | Equals | EndOfLine
+export type SpecialCharacters =
+    | Parenthesis
+    | Operators
+    | Braces
+    | Comma
+    | ArrowFunction
+    | SquareBrackets
+    | Equals
+    | EndOfLine
 
 export type TokenType =
-    | 'Number'
+    | 'NumericLiteral'
+    | 'StringLiteral'
+    | 'BooleanLiteral'
     | 'Identifier'
     | 'Equals'
     | 'Adds'
@@ -52,10 +60,10 @@ export type TokenType =
     | 'CloseSquareBracket'
     | 'Comma'
     | 'ArrowFunction'
-    | "EOF"
+    | 'EOF'
     | (typeof RESERVED_KEYWORDS_DICTIONARY)[keyof typeof RESERVED_KEYWORDS_DICTIONARY]
 
-    export const RESERVED_KEYWORDS_DICTIONARY = {
+export const RESERVED_KEYWORDS_DICTIONARY = {
     abstract: 'Abstract',
     as: 'As',
     async: 'Async',
@@ -76,7 +84,6 @@ export type TokenType =
     enum: 'Enum',
     export: 'Export',
     extends: 'Extends',
-    false: 'False',
     final: 'Final',
     finally: 'Finally',
     for: 'For',
@@ -111,7 +118,6 @@ export type TokenType =
     switch: 'Switch',
     this: 'This',
     throw: 'Throw',
-    true: 'True',
     try: 'Try',
     type: 'Type',
     typeof: 'Typeof',
