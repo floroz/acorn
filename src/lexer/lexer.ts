@@ -1,8 +1,7 @@
 import {
     SPECIAL_CHAR_DICTIONARY,
-    Token,
+    type Token,
     RESERVED_KEYWORDS_DICTIONARY,
-    TokenType,
 } from '../tokens/tokens'
 
 const ANY_DIGIT_REGEX = /\d/
@@ -34,7 +33,12 @@ export function tokenizer(source: string): Token[] {
             }
         }
 
-        if (SPECIAL_CHAR_DICTIONARY.hasOwnProperty(char)) {
+        const isSpecialChar = Object.prototype.hasOwnProperty.call(
+            SPECIAL_CHAR_DICTIONARY,
+            char
+        )
+
+        if (isSpecialChar) {
             tokens.push({
                 type: SPECIAL_CHAR_DICTIONARY[
                     char as keyof typeof SPECIAL_CHAR_DICTIONARY
@@ -73,8 +77,10 @@ export function tokenizer(source: string): Token[] {
                 char = source[++current]
             }
 
-            const isReservedKeyword =
-                RESERVED_KEYWORDS_DICTIONARY.hasOwnProperty(value)
+            const isReservedKeyword = Object.prototype.hasOwnProperty.call(
+                RESERVED_KEYWORDS_DICTIONARY,
+                value
+            )
 
             if (isReservedKeyword) {
                 const keywordType =
@@ -82,20 +88,19 @@ export function tokenizer(source: string): Token[] {
                         value as keyof typeof RESERVED_KEYWORDS_DICTIONARY
                     ]
 
-                if (!keywordType) {
+                if (keywordType == null) {
                     throw new Error(`Invalid keyword: ${value}`)
                 }
 
                 tokens.push({ type: keywordType, value })
-                continue;
-            } 
+                continue
+            }
 
             if (value === 'true' || value === 'false') {
                 tokens.push({ type: 'BooleanLiteral', value })
                 continue
             }
-        
-        
+
             tokens.push({ type: 'Identifier', value })
             continue
         }
@@ -115,7 +120,7 @@ export function tokenizer(source: string): Token[] {
             continue
         }
 
-       // TODO: handle string escape characters
+        // TODO: handle string escape characters
         if (char === "'") {
             let value = ''
             char = source[++current]

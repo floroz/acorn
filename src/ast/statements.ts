@@ -1,4 +1,4 @@
-import { NodeType } from './node'
+import { type NodeType } from './node'
 
 export abstract class Statement {
     constructor(public type: NodeType) {}
@@ -21,7 +21,17 @@ export class VariableDeclaration extends Statement {
 }
 
 export class Literal extends Statement {
-    constructor(public value: number | string | boolean | null | undefined | Symbol | BigInt, public raw?: string) {
+    constructor(
+        public value:
+            | number
+            | string
+            | boolean
+            | null
+            | undefined
+            | symbol
+            | bigint,
+        public raw?: string
+    ) {
         super('Literal')
     }
 }

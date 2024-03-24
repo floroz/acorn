@@ -2,15 +2,15 @@ import {
     Identifier,
     Literal,
     Program,
-    Statement,
+    type Statement,
     VariableDeclaration,
 } from '../ast/statements'
 import { tokenizer } from '../lexer/lexer'
-import { Token } from '../tokens/tokens'
+import { type Token } from '../tokens/tokens'
 
 export class Parser {
     private _tokens!: Token[]
-    private program = new Program([])
+    private readonly program = new Program([])
     private current = 0
 
     parse(source: string): Program {
@@ -31,20 +31,20 @@ export class Parser {
         return this.program
     }
 
-    private tokenize(source: string) {
+    private tokenize(source: string): Token[] {
         return tokenizer(source)
     }
 
-    private get currentToken() {
+    private get currentToken(): Token {
         return this._tokens[this.current]
     }
 
-    private moveToNextToken() {
+    private moveToNextToken(): void {
         this.current++
     }
 
     private parseToken(): Statement {
-        let token = this.currentToken
+        const token = this.currentToken
 
         switch (token.type) {
             case 'Let':
@@ -70,15 +70,21 @@ export class Parser {
         }
     }
 
-    private parseVariableDeclaration(kind: 'let' | 'const' | 'var') {
+    private parseVariableDeclaration(
+        kind: 'let' | 'const' | 'var'
+    ): VariableDeclaration {
         // we expect a let declaration to be followed by an identifier
         this.moveToNextToken()
-        const identifier = this.currentToken
 
-        if (identifier.type !== 'Identifier') {
-            console.error('Expected Identifier but got: ', identifier.type)
-            throw new TypeError(identifier.type)
+        if (this.currentToken.type !== 'Identifier') {
+            console.error(
+                'Expected Identifier but got: ',
+                this.currentToken.type
+            )
+            throw new TypeError(this.currentToken.type)
         }
+
+        const id = new Identifier(this.currentToken.value)
 
         // we expect an equals sign after the identifier
         this.moveToNextToken()
@@ -92,10 +98,8 @@ export class Parser {
         // we know that the right side of the equals sign is the value
         // which can be a single literal, binary expression, a function assinment, etc.
         this.moveToNextToken()
-        return new VariableDeclaration(
-            new Identifier(identifier.value),
-            this.parseToken(),
-            kind
-        )
+        const init = this.parseToken()
+
+        return new VariableDeclaration(id, init, kind)
     }
 }

@@ -1,11 +1,5 @@
-function add(a, b) {
-  return a + b;
-}
-
-const add = (a,b) => a+b;
-
-class Foo {
-  constructor(){
-    let x = 0;
-  }
-}
+let x = 'foo';
+let y = true;
+const z = null
+let k = undefined
+const w = 123;

@@ -1,4 +1,4 @@
-export type Token = {
+export interface Token {
     type: TokenType
     value: string
 }
