@@ -12,7 +12,6 @@ export const SPECIAL_CHAR_DICTIONARY: Record<SpecialCharacters, TokenType> = {
     '*': 'Multiplies',
     '/': 'Divides',
     '%': 'Modulus',
-    ';': 'EndOfLine',
     '{': 'OpenBrace',
     '}': 'CloseBrace',
     '[': 'OpenSquareBracket',
@@ -27,7 +26,6 @@ export type SquareBrackets = '[' | ']'
 export type Braces = '{' | '}'
 export type Comma = ','
 export type Equals = '='
-export type EndOfLine = ';'
 export type ArrowFunction = '=>'
 
 export type SpecialCharacters =
@@ -38,7 +36,6 @@ export type SpecialCharacters =
     | ArrowFunction
     | SquareBrackets
     | Equals
-    | EndOfLine
 
 export type TokenType =
     | 'NumericLiteral'
@@ -51,7 +48,6 @@ export type TokenType =
     | 'Multiplies'
     | 'Divides'
     | 'Modulus'
-    | 'EndOfLine'
     | 'OpenParent'
     | 'CloseParent'
     | 'OpenBrace'
