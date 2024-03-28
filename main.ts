@@ -7,7 +7,7 @@ fs.readFile('./custom.floroz', 'utf8', (err, data) => {
         return
     }
 
-    const parser = new Parser()
+    const parser = new Parser(data)
 
-    console.log(parser.parse(data))
+    console.log(parser.toAST())
 })

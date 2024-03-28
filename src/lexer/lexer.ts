@@ -8,6 +8,18 @@ const ANY_DIGIT_REGEX = /\d/
 const ANY_ALPHABETIC_REGEX = /[a-zA-Z]/
 const SKIPPABLE = [' ', '\n', '\t', ';']
 
+function isSkippableChar(char: string): boolean {
+    return SKIPPABLE.includes(char)
+}
+
+function isDigit(char: string): boolean {
+    return ANY_DIGIT_REGEX.test(char)
+}
+
+function isAlphabetic(char: string): boolean {
+    return ANY_ALPHABETIC_REGEX.test(char)
+}
+
 export class Tokenizer {
     private readonly _tokens: Token[] = []
     private current = 0
@@ -16,68 +28,107 @@ export class Tokenizer {
         this.tokenize()
     }
 
-    public get tokens(): Token[] {
+    get tokens(): Token[] {
         return this._tokens
     }
 
-    private tokenize(): Token[] {
-        const len = this.source.length
+    private get char(): string {
+        return this.source[this.current]
+    }
 
-        while (this.current < len) {
-            const char = this.source[this.current]
+    private get nextChar(): string {
+        return this.source[this.current + 1]
+    }
 
-            if (char === '=') {
-                this.handleEquals(char)
+    private get length(): number {
+        return this.source.length
+    }
+
+    private get isWithinBounds(): boolean {
+        return this.current < this.length
+    }
+
+    private tokenize(): void {
+        while (this.isWithinBounds) {
+            if (this.char === '/' && this.nextChar === '/') {
+                this.current += 2
+                this.handleInlineComments()
+                continue
+            }
+
+            if (this.char === '/' && this.nextChar === '*') {
+                this.current += 2
+                this.handleBlockComments()
+                continue
+            }
+
+            if (this.char === '=') {
+                this.handleEquals(this.char)
                 continue
             }
 
             const isSpecialChar = Object.prototype.hasOwnProperty.call(
                 SPECIAL_CHAR_DICTIONARY,
-                char
+                this.char
             )
 
             if (isSpecialChar) {
                 this._tokens.push({
                     type: SPECIAL_CHAR_DICTIONARY[
-                        char as keyof typeof SPECIAL_CHAR_DICTIONARY
+                        this.char as keyof typeof SPECIAL_CHAR_DICTIONARY
                     ],
-                    value: char,
+                    value: this.char,
                 })
                 this.current++
                 continue
             }
 
-            if (SKIPPABLE.includes(char)) {
+            if (isSkippableChar(this.char)) {
                 this.current++
                 continue
             }
 
-            if (ANY_DIGIT_REGEX.test(char)) {
-                this.handleDigit(char)
+            if (isDigit(this.char)) {
+                this.handleDigit(this.char)
                 continue
             }
 
-            if (ANY_ALPHABETIC_REGEX.test(char)) {
-                this.handleAlphabetic(char)
+            if (isAlphabetic(this.char)) {
+                this.handleAlphabetic(this.char)
                 continue
             }
 
-            if (char === '"') {
-                this.handleDoubleQuoteString(char)
+            if (this.char === '"') {
+                this.handleDoubleQuote(this.char)
                 continue
             }
 
-            if (char === "'") {
-                this.handleSingleQuoteString(char)
+            if (this.char === "'") {
+                this.handleSingleQuote(this.char)
                 continue
             }
 
-            throw new Error(`Unrecognized token: ${char}`)
+            throw new Error(`Unrecognized token: ${this.char}`)
         }
 
         this._tokens.push({ type: 'EOF', value: '' })
+    }
 
-        return this._tokens
+    private handleBlockComments(): void {
+        while (this.isWithinBounds) {
+            if (this.char === '*' && this.nextChar === '/') {
+                this.current += 2
+                return
+            }
+            this.current++
+        }
+        throw new SyntaxError('Unterminated block comment')
+    }
+
+    private handleInlineComments(): void {
+        while (this.char !== '\n' && this.isWithinBounds) {
+            this.current++
+        }
     }
 
     private handleAlphabetic(char: string): void {
@@ -97,13 +148,13 @@ export class Tokenizer {
             return
         }
 
-        const isReservedKeyword = Object.prototype.hasOwnProperty.call(
+        const isReservedKeyboard = Object.prototype.hasOwnProperty.call(
             RESERVED_KEYWORDS_DICTIONARY,
             value
         )
 
-        if (isReservedKeyword) {
-            this.handleReservedKeyword(
+        if (isReservedKeyboard) {
+            this.handleReservedKeywords(
                 value as keyof typeof RESERVED_KEYWORDS_DICTIONARY
             )
             return
@@ -131,7 +182,7 @@ export class Tokenizer {
         this._tokens.push({ type: 'NumericLiteral', value })
     }
 
-    private handleSingleQuoteString(char: string): void {
+    private handleSingleQuote(char: string): void {
         let value = ''
         char = this.source[++this.current]
 
@@ -144,7 +195,7 @@ export class Tokenizer {
         this.current++
     }
 
-    private handleDoubleQuoteString(char: string): void {
+    private handleDoubleQuote(char: string): void {
         let value = ''
         char = this.source[++this.current]
 
@@ -170,7 +221,7 @@ export class Tokenizer {
         this.current++
     }
 
-    private handleReservedKeyword(
+    private handleReservedKeywords(
         value: keyof typeof RESERVED_KEYWORDS_DICTIONARY
     ): void {
         const keywordType = RESERVED_KEYWORDS_DICTIONARY[value]

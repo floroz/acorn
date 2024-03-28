@@ -344,4 +344,193 @@ describe('Tokenizer', () => {
           ]
         `)
     })
+
+    it('should tokenize null and undefined', () => {
+        const source = 'null undefined'
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Null",
+              "value": "null",
+            },
+            {
+              "type": "Undefined",
+              "value": "undefined",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
+
+    it('should tokenize comments', () => {
+        const source = '// This is a comment'
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
+
+    it('should tokenize block comments', () => {
+        const source = '/* This is a block comment */'
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
+
+    it('should tokenize multi line comments', () => {
+        const source = `/* multi line comments
+        * about stuff
+        */`
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
+
+    it('should throw error for unterminated block comments', () => {
+        const source = '/* This is an unterminated block comment'
+        expect(() => new Tokenizer(source).tokens).toThrowError(
+            'Unterminated block comment'
+        )
+
+        const source2 = '/* This is an unterminated block comment *'
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-unused-expressions
+            new Tokenizer(source2).tokens
+            throw new Error('Should have thrown an error')
+        } catch (error) {
+            expect(error).toBeInstanceOf(SyntaxError)
+        }
+    })
+
+    it('should tokenize inline comments', () => {
+        const source = 'foo // This is an inline comment'
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
+
+    it('should tokenize all together', () => {
+        const source = `
+        // This is a comment
+        /* This is a block comment */
+        foo // This is an inline comment
+        123 123.456 123e4 123E4 123e+4 123e-4 123.456e+4 123_456
+        true false "something" 
+        null "bar" undefined
+        /* multi line comments
+        * about stuff
+        */
+        if else else if
+        `
+        expect(new Tokenizer(source).tokens).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123.456",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123e4",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123E4",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123e+4",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123e-4",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123.456e+4",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "123_456",
+            },
+            {
+              "type": "BooleanLiteral",
+              "value": "true",
+            },
+            {
+              "type": "BooleanLiteral",
+              "value": "false",
+            },
+            {
+              "type": "StringLiteral",
+              "value": "something",
+            },
+            {
+              "type": "Null",
+              "value": "null",
+            },
+            {
+              "type": "StringLiteral",
+              "value": "bar",
+            },
+            {
+              "type": "Undefined",
+              "value": "undefined",
+            },
+            {
+              "type": "If",
+              "value": "if",
+            },
+            {
+              "type": "Else",
+              "value": "else",
+            },
+            {
+              "type": "Else",
+              "value": "else",
+            },
+            {
+              "type": "If",
+              "value": "if",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
 })

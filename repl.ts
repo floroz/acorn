@@ -1,8 +1,6 @@
 import { Parser } from './src/parser/parser'
 
 async function repl(): Promise<void> {
-    const parser = new Parser()
-
     while (true) {
         const input = await new Promise<string>((resolve) => {
             process.stdout.write('Repl@0.1> ')
@@ -15,7 +13,9 @@ async function repl(): Promise<void> {
             break
         }
 
-        console.log(parser.parse(input))
+        const parser = new Parser(input)
+
+        console.log(parser.toAST())
     }
 }
 

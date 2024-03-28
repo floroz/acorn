@@ -4,35 +4,37 @@ import {
     Program,
     type Statement,
     VariableDeclaration,
+    BinaryExpression,
 } from '../ast/statements'
-import { tokenizer } from '../lexer/lexer'
+import { Tokenizer } from '../lexer/lexer'
 import { type Token } from '../tokens/tokens'
 
 export class Parser {
-    private _tokens!: Token[]
+    private readonly _tokens!: Token[]
     private readonly program = new Program([])
     private current = 0
 
-    parse(source: string): Program {
-        this._tokens = this.tokenize(source)
+    constructor(private readonly source: string) {
+        this._tokens = new Tokenizer(this.source).tokens
+        // console.log('Tokens: ', this._tokens)
+    }
 
-        console.log('Tokens: ', this._tokens)
-
-        while (this._tokens[this.current].type !== 'EOF') {
-            if (this._tokens[this.current].type === 'EndOfLine') {
-                this.moveToNextToken()
-                continue
+    toAST(): Program {
+        while (true) {
+            if (this.currentToken.type === 'EOF') {
+                break
             }
-            this.program.body.push(this.parseToken())
+
+            const node = this.parseToken()
+
+            if (node != null) {
+                this.program.body.push(node)
+            }
 
             this.moveToNextToken()
         }
 
         return this.program
-    }
-
-    private tokenize(source: string): Token[] {
-        return tokenizer(source)
     }
 
     private get currentToken(): Token {
@@ -65,9 +67,27 @@ export class Parser {
                 return new Literal(null, token.value)
             case 'Undefined':
                 return new Literal(undefined, token.value)
+            case 'Adds':
+            case 'Subtracts':
+            case 'Multiplies':
+            case 'Divides':
+                return this.parseBinaryExpression()
             default:
                 throw new TypeError(token.type)
         }
+    }
+
+    private parseBinaryExpression(): BinaryExpression {
+        const token = this.currentToken
+        // we expect a binary expression to be followed by a number
+        this.moveToNextToken()
+        const left = this.parseToken()
+
+        // we expect the right side of the binary expression to be a number
+        this.moveToNextToken()
+        const right = this.parseToken()
+
+        return new BinaryExpression(token.type, left, right)
     }
 
     private parseVariableDeclaration(
@@ -98,6 +118,7 @@ export class Parser {
         // we know that the right side of the equals sign is the value
         // which can be a single literal, binary expression, a function assinment, etc.
         this.moveToNextToken()
+
         const init = this.parseToken()
 
         return new VariableDeclaration(id, init, kind)
