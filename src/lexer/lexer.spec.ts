@@ -533,4 +533,170 @@ describe('Tokenizer', () => {
           ]
         `)
     })
+
+    it('should support multi line expressions', () => {
+        expect(
+            new Tokenizer(`
+        foo
+        bar
+        `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "Identifier",
+              "value": "bar",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+
+        expect(
+            new Tokenizer(`
+        foo // This is an inline comment
+        bar
+        `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "Identifier",
+              "value": "bar",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+
+        expect(
+            new Tokenizer(`
+        foo /* This is a block comment */
+        bar
+        `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "Identifier",
+              "value": "bar",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+
+        expect(
+            new Tokenizer(`
+        foo /* multi line comments
+        * about stuff
+        */
+        bar
+        `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "Identifier",
+              "value": "bar",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+
+        expect(
+            new Tokenizer(`
+        foo /* multi line comments
+        * about stuff
+        */
+        // This is an inline comment
+        bar
+        `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "Identifier",
+              "value": "bar",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+
+        expect(
+            new Tokenizer(`
+      function 
+      foo
+      () {
+        return 1
+      }
+      `).tokens
+        ).toMatchInlineSnapshot(`
+          [
+            {
+              "type": "Function",
+              "value": "function",
+            },
+            {
+              "type": "Identifier",
+              "value": "foo",
+            },
+            {
+              "type": "OpenParen",
+              "value": "(",
+            },
+            {
+              "type": "CloseParen",
+              "value": ")",
+            },
+            {
+              "type": "OpenBrace",
+              "value": "{",
+            },
+            {
+              "type": "Return",
+              "value": "return",
+            },
+            {
+              "type": "NumericLiteral",
+              "value": "1",
+            },
+            {
+              "type": "CloseBrace",
+              "value": "}",
+            },
+            {
+              "type": "EOF",
+              "value": "",
+            },
+          ]
+        `)
+    })
 })

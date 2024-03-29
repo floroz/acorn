@@ -4,8 +4,8 @@ export interface Token {
 }
 
 export const SPECIAL_CHAR_DICTIONARY: Record<SpecialCharacters, TokenType> = {
-    '(': 'OpenParent',
-    ')': 'CloseParent',
+    '(': 'OpenParen',
+    ')': 'CloseParen',
     '=': 'Equals',
     '+': 'Adds',
     '-': 'Subtracts',
@@ -48,8 +48,8 @@ export type TokenType =
     | 'Multiplies'
     | 'Divides'
     | 'Modulus'
-    | 'OpenParent'
-    | 'CloseParent'
+    | 'OpenParen'
+    | 'CloseParen'
     | 'OpenBrace'
     | 'CloseBrace'
     | 'OpenSquareBracket'

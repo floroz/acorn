@@ -1,3 +1,4 @@
+/* eslint-disable no-case-declarations */
 import {
     Identifier,
     Literal,
@@ -7,7 +8,7 @@ import {
     BinaryExpression,
 } from '../ast/statements'
 import { Tokenizer } from '../lexer/lexer'
-import { type Token } from '../tokens/tokens'
+import { type TokenType, type Token } from '../tokens/tokens'
 
 export class Parser {
     private readonly _tokens!: Token[]
@@ -21,17 +22,20 @@ export class Parser {
 
     toAST(): Program {
         while (true) {
-            if (this.currentToken.type === 'EOF') {
+            if (
+                this.current >= this._tokens.length ||
+                this.currentToken?.type === 'EOF'
+            ) {
                 break
             }
 
-            const node = this.parseToken()
+            const node = this.parseStatement()
 
             if (node != null) {
                 this.program.body.push(node)
             }
 
-            this.moveToNextToken()
+            this.next()
         }
 
         return this.program
@@ -41,60 +45,91 @@ export class Parser {
         return this._tokens[this.current]
     }
 
-    private moveToNextToken(): void {
+    private next(): void {
         this.current++
     }
 
-    private parseToken(): Statement {
+    private match(type: TokenType): boolean {
+        return this.currentToken.type === type
+    }
+
+    private parseStatement(): Statement {
+        return this.parseExpression()
+    }
+
+    private parseExpression(): Statement {
+        return this.parseAddition()
+    }
+
+    private parseAddition(): Statement {
+        let left = this.parseMultiplication()
+
+        while (this.match('Adds') || this.match('Subtracts')) {
+            const operator = this.currentToken.value
+            this.next()
+            const right = this.parseMultiplication()
+            left = new BinaryExpression(operator, left, right)
+        }
+
+        return left
+    }
+
+    private parseMultiplication(): Statement {
+        let left = this.parsePrimary()
+
+        while (
+            this.match('Multiplies') ||
+            this.match('Divides') ||
+            this.match('Modulus')
+        ) {
+            const operator = this.currentToken.value
+            this.next()
+            const right = this.parsePrimary()
+            left = new BinaryExpression(operator, left, right)
+        }
+
+        return left
+    }
+
+    private parsePrimary(): Statement {
         const token = this.currentToken
 
         switch (token.type) {
-            case 'Let':
-                return this.parseVariableDeclaration('let')
-            case 'Const':
-                return this.parseVariableDeclaration('const')
-            case 'Var':
-                return this.parseVariableDeclaration('var')
-            case 'Identifier':
-                return new Identifier(token.value)
             case 'NumericLiteral':
-                return new Literal(Number.parseInt(token.value), token.value)
+                this.next()
+                return new Literal(+token.value, token.value)
             case 'StringLiteral':
+                this.next()
                 return new Literal(token.value, token.value)
             case 'BooleanLiteral':
-                return new Literal(Boolean(token.value), token.value)
+                this.next()
+                return new Literal(token.value === 'true', token.value)
             case 'Null':
+                this.next()
                 return new Literal(null, token.value)
             case 'Undefined':
+                this.next()
                 return new Literal(undefined, token.value)
-            case 'Adds':
-            case 'Subtracts':
-            case 'Multiplies':
-            case 'Divides':
-                return this.parseBinaryExpression()
+            case 'Identifier':
+                this.next()
+                return new Identifier(token.value)
+            case 'OpenParen':
+                this.next()
+                const expr = this.parseExpression()
+                if (this.currentToken.type !== 'CloseParen') {
+                    throw new SyntaxError('Expected closing parenthesis')
+                }
+                this.next()
+                return expr
             default:
-                throw new TypeError(token.type)
+                throw new Error(`Unexpected token: ${token.type}`)
         }
-    }
-
-    private parseBinaryExpression(): BinaryExpression {
-        const token = this.currentToken
-        // we expect a binary expression to be followed by a number
-        this.moveToNextToken()
-        const left = this.parseToken()
-
-        // we expect the right side of the binary expression to be a number
-        this.moveToNextToken()
-        const right = this.parseToken()
-
-        return new BinaryExpression(token.type, left, right)
     }
 
     private parseVariableDeclaration(
         kind: 'let' | 'const' | 'var'
     ): VariableDeclaration {
-        // we expect a let declaration to be followed by an identifier
-        this.moveToNextToken()
+        this.next()
 
         if (this.currentToken.type !== 'Identifier') {
             console.error(
@@ -107,7 +142,7 @@ export class Parser {
         const id = new Identifier(this.currentToken.value)
 
         // we expect an equals sign after the identifier
-        this.moveToNextToken()
+        this.next()
         const equals = this.currentToken
 
         if (equals.type !== 'Equals') {
@@ -117,7 +152,7 @@ export class Parser {
 
         // we know that the right side of the equals sign is the value
         // which can be a single literal, binary expression, a function assinment, etc.
-        this.moveToNextToken()
+        this.next()
 
         const init = this.parseToken()
 
