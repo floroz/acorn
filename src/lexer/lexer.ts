@@ -6,7 +6,7 @@ import {
 
 const ANY_DIGIT_REGEX = /\d/
 const ANY_ALPHABETIC_REGEX = /[a-zA-Z]/
-const SKIPPABLE = [' ', '\n', '\t', ';']
+const SKIPPABLE = [' ', '\n', '\t']
 
 function isSkippableChar(char: string): boolean {
     return SKIPPABLE.includes(char)

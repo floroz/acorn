@@ -78,6 +78,10 @@ describe('Tokenizer', () => {
         expect(new Tokenizer(source2).tokens).toMatchInlineSnapshot(`
           [
             {
+              "type": "Semicolon",
+              "value": ";",
+            },
+            {
               "type": "EOF",
               "value": "",
             },
@@ -86,6 +90,10 @@ describe('Tokenizer', () => {
         const source3 = ' ;  '
         expect(new Tokenizer(source3).tokens).toMatchInlineSnapshot(`
           [
+            {
+              "type": "Semicolon",
+              "value": ";",
+            },
             {
               "type": "EOF",
               "value": "",

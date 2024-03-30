@@ -18,6 +18,7 @@ export const SPECIAL_CHAR_DICTIONARY: Record<SpecialCharacters, TokenType> = {
     ']': 'CloseSquareBracket',
     ',': 'Comma',
     '=>': 'ArrowFunction',
+    ';': 'Semicolon',
 } as const
 
 export type Operators = '+' | '-' | '*' | '/' | '%'
@@ -26,6 +27,7 @@ export type SquareBrackets = '[' | ']'
 export type Braces = '{' | '}'
 export type Comma = ','
 export type Equals = '='
+export type Semicolon = ';'
 export type ArrowFunction = '=>'
 
 export type SpecialCharacters =
@@ -36,6 +38,7 @@ export type SpecialCharacters =
     | ArrowFunction
     | SquareBrackets
     | Equals
+    | Semicolon
 
 export type TokenType =
     | 'NumericLiteral'
@@ -55,6 +58,7 @@ export type TokenType =
     | 'OpenSquareBracket'
     | 'CloseSquareBracket'
     | 'Comma'
+    | 'Semicolon'
     | 'ArrowFunction'
     | 'EOF'
     | (typeof RESERVED_KEYWORDS_DICTIONARY)[keyof typeof RESERVED_KEYWORDS_DICTIONARY]
