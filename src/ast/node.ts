@@ -1,11 +1,13 @@
 export type NodeType =
     | 'Program'
+    | 'Property'
     | 'Literal'
     | 'Identifier'
     | 'BinaryExpression'
     | 'UnaryExpression'
     | 'AssignmentExpression'
     | 'CallExpression'
+    | 'ObjectExpression'
     | 'FunctionDeclaration'
     | 'VariableDeclaration'
     | 'IfStatement'

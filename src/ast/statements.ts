@@ -80,6 +80,20 @@ export class CallExpression extends Statement {
     }
 }
 
+export class Property extends Statement {
+    constructor(
+        public key: Statement,
+        public value: Statement
+    ) {
+        super('Property')
+    }
+}
+export class ObjectExpression extends Statement {
+    constructor(public properties: Property[]) {
+        super('ObjectExpression')
+    }
+}
+
 export class FunctionDeclaration extends Statement {
     constructor(
         public id: Statement,

@@ -10,6 +10,8 @@ import {
     BlockStatement,
     AssignmentExpression,
     ReturnStatement,
+    Property,
+    ObjectExpression,
 } from '../ast/statements'
 import { Tokenizer } from '../lexer/lexer'
 import { type TokenType, type Token } from '../tokens/tokens'
@@ -171,7 +173,15 @@ export class Parser {
                 return new Identifier(token.value)
             case 'OpenParen':
                 this.ingest()
-                return this.parseOpenParens()
+                const statement = this.parseExpression()
+                if (this.token().type !== 'CloseParen') {
+                    throw new SyntaxError('Expected closing parenthesis')
+                }
+                this.ingest()
+                return statement
+            case 'OpenBrace':
+                this.ingest()
+                return this.parseObjectExpression()
             case 'Return':
                 this.ingest()
                 return this.parseReturnStatement()
@@ -180,13 +190,38 @@ export class Parser {
         }
     }
 
-    private parseOpenParens(): Statement {
-        const statement = this.parseExpression()
-        if (this.token().type !== 'CloseParen') {
-            throw new SyntaxError('Expected closing parenthesis')
+    private parseObjectExpression(): Statement {
+        const properties: Property[] = []
+
+        while (this.token().type !== 'CloseBrace') {
+            if (this.token().type === 'Comma') {
+                this.ingest()
+            }
+
+            if (this.token().type !== 'Identifier') {
+                throw new SyntaxError(
+                    `Cannot declare an object without a key identifier`
+                )
+            }
+
+            const key = new Identifier(this.token().value)
+
+            this.ingest()
+
+            if (this.token().type !== 'Colon') {
+                throw new SyntaxError(
+                    `Cannot declare an object without a colon separator`
+                )
+            }
+
+            this.ingest()
+
+            properties.push(new Property(key, this.parseExpression()))
         }
+
         this.ingest()
-        return statement
+
+        return new ObjectExpression(properties)
     }
 
     private parseVariableDeclaration(

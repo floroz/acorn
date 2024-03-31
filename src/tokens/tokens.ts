@@ -19,6 +19,7 @@ export const SPECIAL_CHAR_DICTIONARY: Record<SpecialCharacters, TokenType> = {
     ',': 'Comma',
     '=>': 'ArrowFunction',
     ';': 'Semicolon',
+    ':': 'Colon',
 } as const
 
 export type Operators = '+' | '-' | '*' | '/' | '%'
@@ -28,6 +29,7 @@ export type Braces = '{' | '}'
 export type Comma = ','
 export type Equals = '='
 export type Semicolon = ';'
+export type Colon = ':'
 export type ArrowFunction = '=>'
 
 export type SpecialCharacters =
@@ -39,6 +41,7 @@ export type SpecialCharacters =
     | SquareBrackets
     | Equals
     | Semicolon
+    | Colon
 
 export type TokenType =
     | 'NumericLiteral'
@@ -58,6 +61,7 @@ export type TokenType =
     | 'OpenSquareBracket'
     | 'CloseSquareBracket'
     | 'Comma'
+    | 'Colon'
     | 'Semicolon'
     | 'ArrowFunction'
     | 'EOF'

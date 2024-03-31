@@ -639,4 +639,290 @@ describe('Parser', () => {
             expect(() => new Parser(`function add() {}`).parse()).not.toThrow()
         })
     })
+
+    describe('Object Expressions', () => {
+        it('should parse a simple object expression', () => {
+            expect(new Parser(`{}`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`{ x: 1 }`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Literal {
+                          "raw": "1",
+                          "type": "Literal",
+                          "value": 1,
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`{ x: 1, y: 2 }`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Literal {
+                          "raw": "1",
+                          "type": "Literal",
+                          "value": 1,
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Literal {
+                          "raw": "2",
+                          "type": "Literal",
+                          "value": 2,
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should parse a nested object expression', () => {
+            expect(new Parser(`{ x: { y: 1 } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": ObjectExpression {
+                          "properties": [
+                            Property {
+                              "key": Identifier {
+                                "name": "y",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": Literal {
+                                "raw": "1",
+                                "type": "Literal",
+                                "value": 1,
+                              },
+                            },
+                          ],
+                          "type": "ObjectExpression",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should parse a nested object expression with multiple properties', () => {
+            expect(new Parser(`{ x: { y: 1, z: 2 } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": ObjectExpression {
+                          "properties": [
+                            Property {
+                              "key": Identifier {
+                                "name": "y",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": Literal {
+                                "raw": "1",
+                                "type": "Literal",
+                                "value": 1,
+                              },
+                            },
+                            Property {
+                              "key": Identifier {
+                                "name": "z",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": Literal {
+                                "raw": "2",
+                                "type": "Literal",
+                                "value": 2,
+                              },
+                            },
+                          ],
+                          "type": "ObjectExpression",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should parse a nested object expression with a nested object', () => {
+            expect(new Parser(`{ x: { y: { z: 1 } } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": ObjectExpression {
+                          "properties": [
+                            Property {
+                              "key": Identifier {
+                                "name": "y",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": ObjectExpression {
+                                "properties": [
+                                  Property {
+                                    "key": Identifier {
+                                      "name": "z",
+                                      "type": "Identifier",
+                                    },
+                                    "type": "Property",
+                                    "value": Literal {
+                                      "raw": "1",
+                                      "type": "Literal",
+                                      "value": 1,
+                                    },
+                                  },
+                                ],
+                                "type": "ObjectExpression",
+                              },
+                            },
+                          ],
+                          "type": "ObjectExpression",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should parse a nested object expression with a nested object with multiple properties', () => {
+            expect(new Parser(`{ x: { y: { z: 1, w: 2 } } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": ObjectExpression {
+                          "properties": [
+                            Property {
+                              "key": Identifier {
+                                "name": "y",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": ObjectExpression {
+                                "properties": [
+                                  Property {
+                                    "key": Identifier {
+                                      "name": "z",
+                                      "type": "Identifier",
+                                    },
+                                    "type": "Property",
+                                    "value": Literal {
+                                      "raw": "1",
+                                      "type": "Literal",
+                                      "value": 1,
+                                    },
+                                  },
+                                  Property {
+                                    "key": Identifier {
+                                      "name": "w",
+                                      "type": "Identifier",
+                                    },
+                                    "type": "Property",
+                                    "value": Literal {
+                                      "raw": "2",
+                                      "type": "Literal",
+                                      "value": 2,
+                                    },
+                                  },
+                                ],
+                                "type": "ObjectExpression",
+                              },
+                            },
+                          ],
+                          "type": "ObjectExpression",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+    })
 })
