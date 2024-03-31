@@ -569,7 +569,7 @@ describe('Parser', () => {
     })
 
     describe('Function Declarations', () => {
-        it.skip('should parse a function declaration', () => {
+        it('should parse a function declaration', () => {
             expect(new Parser(`function add(a, b) { return a + b }`).parse())
                 .toMatchInlineSnapshot(`
               Program {

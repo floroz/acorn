@@ -9,6 +9,7 @@ import {
     FunctionDeclaration,
     BlockStatement,
     AssignmentExpression,
+    ReturnStatement,
 } from '../ast/statements'
 import { Tokenizer } from '../lexer/lexer'
 import { type TokenType, type Token } from '../tokens/tokens'
@@ -27,7 +28,7 @@ export class Parser {
         while (true) {
             if (
                 this.current >= this._tokens.length ||
-                this.currentToken?.type === 'EOF'
+                this.token()?.type === 'EOF'
             ) {
                 break
             }
@@ -44,21 +45,23 @@ export class Parser {
         return this.program
     }
 
-    private get currentToken(): Token {
+    // this must be a method and not a getter, to provide the correct type inference
+    // when the method is called after an ingestion.
+    private token(): Token {
         return this._tokens[this.current]
     }
 
     private ingest(): Token {
         this.current++
-        return this.currentToken
+        return this.token()
     }
 
     private match(type: TokenType): boolean {
-        return this.currentToken.type === type
+        return this.token().type === type
     }
 
     private parseStatement(): Statement {
-        const type = this.currentToken.type
+        const type = this.token().type
 
         switch (type) {
             case 'Let':
@@ -67,6 +70,8 @@ export class Parser {
                 return this.parseVariableDeclaration(type)
             case 'Function':
                 return this.parseFunctionDeclaration()
+            case 'Return':
+                return this.parseReturnStatement()
             default:
                 return this.parseExpression()
         }
@@ -80,7 +85,7 @@ export class Parser {
         const left = this.parseAdditiveExpression()
 
         if (this.match('Equals')) {
-            const operator = this.currentToken.value
+            const operator = this.token().value
             this.ingest()
             const right = this.parseExpression()
             const expression = new AssignmentExpression(operator, left, right)
@@ -96,7 +101,7 @@ export class Parser {
                 this.match('Divides')) &&
             lookahead.type === 'Equals'
         ) {
-            const operator = this.currentToken.value + lookahead.value
+            const operator = this.token().value + lookahead.value
             this.ingest()
             this.ingest()
             const right = this.parseExpression()
@@ -114,7 +119,7 @@ export class Parser {
             // exclude compund assignment operators
             this._tokens[this.current + 1].type !== 'Equals'
         ) {
-            const operator = this.currentToken.value
+            const operator = this.token().value
             this.ingest()
             const right = this.parseMultiplicativeExpression()
             left = new BinaryExpression(operator, left, right)
@@ -133,7 +138,7 @@ export class Parser {
             // exclude compund assignment operators
             this._tokens[this.current + 1].type !== 'Equals'
         ) {
-            const operator = this.currentToken.value
+            const operator = this.token().value
             this.ingest()
             const right = this.parsePrimary()
             left = new BinaryExpression(operator, left, right)
@@ -143,7 +148,7 @@ export class Parser {
     }
 
     private parsePrimary(): Statement {
-        const token = this.currentToken
+        const token = this.token()
 
         switch (token.type) {
             case 'NumericLiteral':
@@ -167,6 +172,9 @@ export class Parser {
             case 'OpenParen':
                 this.ingest()
                 return this.parseOpenParens()
+            case 'Return':
+                this.ingest()
+                return this.parseReturnStatement()
             default:
                 throw new Error(`Unexpected token: ${token.type}`)
         }
@@ -174,7 +182,7 @@ export class Parser {
 
     private parseOpenParens(): Statement {
         const statement = this.parseExpression()
-        if (this.currentToken.type !== 'CloseParen') {
+        if (this.token().type !== 'CloseParen') {
             throw new SyntaxError('Expected closing parenthesis')
         }
         this.ingest()
@@ -186,24 +194,24 @@ export class Parser {
     ): VariableDeclaration {
         const kind = type.toLowerCase() as 'let' | 'const' | 'var'
 
-        let token = this.ingest()
+        this.ingest()
 
-        if (token.type !== 'Identifier') {
+        if (this.token().type !== 'Identifier') {
             throw new SyntaxError(
                 `Cannot declare a variable without an identifier`
             )
         }
 
-        const id = new Identifier(token.value)
+        const id = new Identifier(this.token().value)
 
-        token = this.ingest()
+        this.ingest()
 
         // no we need a lookahead if there is a semicolon to terminate the statement
-        if (token.type === 'Semicolon') {
+        if (this.token().type === 'Semicolon') {
             if (kind === 'const') {
                 console.error(
                     'Cannot declare a constant without a value: ',
-                    token.value
+                    this.token().value
                 )
                 throw new SyntaxError(
                     'Cannot declare a constant without a value'
@@ -213,12 +221,9 @@ export class Parser {
             return new VariableDeclaration(id, undefined, kind)
         }
 
-        if (this._tokens[this.current].type !== 'Equals') {
-            console.error(
-                'Expected Equals but got: ',
-                this._tokens[this.current].type
-            )
-            throw new TypeError(this._tokens[this.current].type)
+        if (this.token().type !== 'Equals') {
+            console.error('Expected Equals but got: ', this.token().type)
+            throw new TypeError(this.token().type)
         }
 
         // we know that the right side of the equals sign is the value
@@ -234,66 +239,74 @@ export class Parser {
         )
     }
 
-    private parseFunctionDeclaration(): FunctionDeclaration {
-        throw new Error('Method not implemented.')
-        let token = this.ingest()
+    private parseReturnStatement(): Statement {
+        const expression = this.parseExpression()
+        return new ReturnStatement(expression)
+    }
 
-        if (token.type !== 'Identifier') {
-            throw new SyntaxError(`Expected Identifier but got: ${token.type}`)
+    private parseFunctionDeclaration(): FunctionDeclaration {
+        this.ingest()
+
+        if (this.token().type !== 'Identifier') {
+            throw new SyntaxError(
+                `Expected Identifier but got: ${this.token().type}`
+            )
         }
 
-        const id = new Identifier(token.value)
+        const id = new Identifier(this.token().value)
 
-        token = this.ingest()
+        this.ingest()
 
-        if (token.type !== 'OpenParen') {
-            throw new SyntaxError(`Expected OpenParen but got: ${token.type}`)
+        if (this.token().type !== 'OpenParen') {
+            throw new SyntaxError(
+                `Expected OpenParen but got: ${this.token().type}`
+            )
         }
 
         const args: Identifier[] = []
 
-        token = this.ingest()
-        while (token.type !== 'CloseParen') {
-            if (token.type === 'EOF') {
+        this.ingest()
+        while (this.token().type !== 'CloseParen') {
+            if (this.token().type === 'EOF') {
                 throw new SyntaxError(
-                    `Expected CloseParen but got: ${token.type}`
+                    `Expected CloseParen but got: ${this.token().type}`
                 )
             }
 
-            if (token.type === 'Identifier') {
-                args.push(new Identifier(token.value))
-            } else if (token.type !== 'Comma') {
+            if (this.token().type === 'Identifier') {
+                args.push(new Identifier(this.token().value))
+            } else if (this.token().type !== 'Comma') {
                 throw new SyntaxError(
-                    `Invalid Argument Syntax: expected Identifier or Comma but got: ${token.type}`
+                    `Invalid Argument Syntax: expected Identifier or Comma but got: ${this.token().type}`
                 )
             }
 
-            token = this.ingest()
+            this.ingest()
         }
 
-        token = this.ingest()
+        this.ingest()
 
-        if (token.type !== 'OpenBrace') {
-            throw new SyntaxError(`Expected OpenBrace but got: ${token.type}`)
+        if (this.token().type !== 'OpenBrace') {
+            throw new SyntaxError(
+                `Expected OpenBrace but got: ${this.token().type}`
+            )
         }
 
-        token = this.ingest()
+        this.ingest()
 
         const block = new BlockStatement([])
 
-        while (token.type !== 'CloseBrace') {
-            if (token.type === 'EOF') {
+        while (this.token().type !== 'CloseBrace') {
+            if (this.token().type === 'EOF') {
                 throw new SyntaxError(
-                    `Expected CloseBrace but got: ${token.type}`
+                    `Expected CloseBrace but got: ${this.token().type}`
                 )
             }
-            const node = this.parseStatement()
+            const node = this.parseExpression()
 
             if (node != null) {
                 block.body.push(node)
             }
-
-            token = this.ingest()
         }
 
         return new FunctionDeclaration(id, args, block)
