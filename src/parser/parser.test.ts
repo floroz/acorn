@@ -1006,5 +1006,185 @@ describe('Parser', () => {
               }
             `)
         })
+
+        it('should support shorthand object properties', () => {
+            expect(new Parser(`{ x, y }`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`{ x, y, z }`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "z",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "z",
+                          "type": "Identifier",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`{ x: x, y: y, z: z }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "z",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "z",
+                          "type": "Identifier",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should support shorthand object properties with nested objects', () => {
+            expect(new Parser(`{ x, y: { z } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  ObjectExpression {
+                    "properties": [
+                      Property {
+                        "key": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": Identifier {
+                          "name": "x",
+                          "type": "Identifier",
+                        },
+                      },
+                      Property {
+                        "key": Identifier {
+                          "name": "y",
+                          "type": "Identifier",
+                        },
+                        "type": "Property",
+                        "value": ObjectExpression {
+                          "properties": [
+                            Property {
+                              "key": Identifier {
+                                "name": "z",
+                                "type": "Identifier",
+                              },
+                              "type": "Property",
+                              "value": Identifier {
+                                "name": "z",
+                                "type": "Identifier",
+                              },
+                            },
+                          ],
+                          "type": "ObjectExpression",
+                        },
+                      },
+                    ],
+                    "type": "ObjectExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
     })
 })

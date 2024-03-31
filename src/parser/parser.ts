@@ -192,7 +192,10 @@ export class Parser {
     private parseObjectExpression(): Statement {
         const properties: Property[] = []
 
-        while (this.token().type !== 'CloseBrace') {
+        while (
+            this.token().type !== 'CloseBrace' &&
+            this.token().type !== 'EOF'
+        ) {
             if (this.token().type === 'Comma') {
                 this.ingest()
             }
@@ -208,13 +211,20 @@ export class Parser {
             this.ingest()
 
             if (this.token().type !== 'Colon') {
-                throw new SyntaxError(
-                    `Cannot declare an object without a colon separator`
-                )
+                // Support for Shorthand property declaration
+                if (
+                    this.token().type === 'Comma' ||
+                    this.token().type === 'CloseBrace'
+                ) {
+                    properties.push(new Property(key, new Identifier(key.name)))
+                    continue
+                } else {
+                    throw new SyntaxError(
+                        `Cannot declare an object without a colon separator`
+                    )
+                }
             }
-
             this.ingest()
-
             properties.push(new Property(key, this.parseExpression()))
         }
 
