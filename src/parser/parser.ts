@@ -23,7 +23,6 @@ export class Parser {
 
     constructor(private readonly source: string) {
         this._tokens = new Tokenizer(this.source).tokens
-        // console.log('Tokens: ', this._tokens)
     }
 
     parse(): Program {

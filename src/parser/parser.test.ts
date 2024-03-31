@@ -526,25 +526,25 @@ describe('Parser', () => {
             const result = parser.parse()
 
             expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Literal {
-                "raw": "undefined",
-                "type": "Literal",
-                "value": undefined,
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Literal {
+                      "raw": "undefined",
+                      "type": "Literal",
+                      "value": undefined,
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should throw when the variable keyword is declared without nothing else', () => {
@@ -565,6 +565,88 @@ describe('Parser', () => {
             ).toThrowErrorMatchingInlineSnapshot(
                 `[SyntaxError: Cannot declare a variable without an identifier]`
             )
+        })
+
+        it('should support variable declarations of objects', () => {
+            expect(new Parser(`let x = { y: 1 }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": ObjectExpression {
+                      "properties": [
+                        Property {
+                          "key": Identifier {
+                            "name": "y",
+                            "type": "Identifier",
+                          },
+                          "type": "Property",
+                          "value": Literal {
+                            "raw": "1",
+                            "type": "Literal",
+                            "value": 1,
+                          },
+                        },
+                      ],
+                      "type": "ObjectExpression",
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`const x = { y: { z: 1 } }`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": ObjectExpression {
+                      "properties": [
+                        Property {
+                          "key": Identifier {
+                            "name": "y",
+                            "type": "Identifier",
+                          },
+                          "type": "Property",
+                          "value": ObjectExpression {
+                            "properties": [
+                              Property {
+                                "key": Identifier {
+                                  "name": "z",
+                                  "type": "Identifier",
+                                },
+                                "type": "Property",
+                                "value": Literal {
+                                  "raw": "1",
+                                  "type": "Literal",
+                                  "value": 1,
+                                },
+                              },
+                            ],
+                            "type": "ObjectExpression",
+                          },
+                        },
+                      ],
+                      "type": "ObjectExpression",
+                    },
+                    "kind": "const",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
     })
 
