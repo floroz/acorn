@@ -616,5 +616,27 @@ describe('Parser', () => {
               }
             `)
         })
+
+        it('should throw when the function declaration syntax is not correct', () => {
+            expect(() =>
+                new Parser(`function`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Expected Identifier but got: EOF]`
+            )
+
+            expect(() =>
+                new Parser(`function add`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Expected OpenParen but got: EOF]`
+            )
+
+            expect(() =>
+                new Parser(`function () {}`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Expected Identifier but got: OpenParen]`
+            )
+
+            expect(() => new Parser(`function add() {}`).parse()).not.toThrow()
+        })
     })
 })
