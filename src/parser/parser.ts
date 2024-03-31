@@ -6,6 +6,9 @@ import {
     type Statement,
     VariableDeclaration,
     BinaryExpression,
+    FunctionDeclaration,
+    BlockStatement,
+    AssignmentExpression,
 } from '../ast/statements'
 import { Tokenizer } from '../lexer/lexer'
 import { type TokenType, type Token } from '../tokens/tokens'
@@ -20,7 +23,7 @@ export class Parser {
         // console.log('Tokens: ', this._tokens)
     }
 
-    toAST(): Program {
+    parse(): Program {
         while (true) {
             if (
                 this.current >= this._tokens.length ||
@@ -35,7 +38,7 @@ export class Parser {
                 this.program.body.push(node)
             }
 
-            this.next()
+            this.ingest()
         }
 
         return this.program
@@ -45,8 +48,9 @@ export class Parser {
         return this._tokens[this.current]
     }
 
-    private next(): void {
+    private ingest(): Token {
         this.current++
+        return this.currentToken
     }
 
     private match(type: TokenType): boolean {
@@ -54,36 +58,83 @@ export class Parser {
     }
 
     private parseStatement(): Statement {
-        return this.parseExpression()
+        const type = this.currentToken.type
+
+        switch (type) {
+            case 'Let':
+            case 'Const':
+            case 'Var':
+                return this.parseVariableDeclaration(type)
+            case 'Function':
+                return this.parseFunctionDeclaration()
+            default:
+                return this.parseExpression()
+        }
     }
 
     private parseExpression(): Statement {
-        return this.parseAddition()
+        return this.parseAssignmentExpression()
     }
 
-    private parseAddition(): Statement {
-        let left = this.parseMultiplication()
+    private parseAssignmentExpression(): Statement {
+        const left = this.parseAdditiveExpression()
 
-        while (this.match('Adds') || this.match('Subtracts')) {
+        if (this.match('Equals')) {
             const operator = this.currentToken.value
-            this.next()
-            const right = this.parseMultiplication()
+            this.ingest()
+            const right = this.parseExpression()
+            const expression = new AssignmentExpression(operator, left, right)
+            return expression
+        }
+
+        const lookahead = this._tokens[this.current + 1]
+
+        if (
+            (this.match('Adds') ||
+                this.match('Subtracts') ||
+                this.match('Multiplies') ||
+                this.match('Divides')) &&
+            lookahead.type === 'Equals'
+        ) {
+            const operator = this.currentToken.value + lookahead.value
+            this.ingest()
+            this.ingest()
+            const right = this.parseExpression()
+            const expression = new AssignmentExpression(operator, left, right)
+            return expression
+        }
+        return left
+    }
+
+    private parseAdditiveExpression(): Statement {
+        let left = this.parseMultiplicativeExpression()
+
+        while (
+            (this.match('Adds') || this.match('Subtracts')) &&
+            // exclude compund assignment operators
+            this._tokens[this.current + 1].type !== 'Equals'
+        ) {
+            const operator = this.currentToken.value
+            this.ingest()
+            const right = this.parseMultiplicativeExpression()
             left = new BinaryExpression(operator, left, right)
         }
 
         return left
     }
 
-    private parseMultiplication(): Statement {
+    private parseMultiplicativeExpression(): Statement {
         let left = this.parsePrimary()
 
         while (
-            this.match('Multiplies') ||
-            this.match('Divides') ||
-            this.match('Modulus')
+            (this.match('Multiplies') ||
+                this.match('Divides') ||
+                this.match('Modulus')) &&
+            // exclude compund assignment operators
+            this._tokens[this.current + 1].type !== 'Equals'
         ) {
             const operator = this.currentToken.value
-            this.next()
+            this.ingest()
             const right = this.parsePrimary()
             left = new BinaryExpression(operator, left, right)
         }
@@ -96,66 +147,155 @@ export class Parser {
 
         switch (token.type) {
             case 'NumericLiteral':
-                this.next()
+                this.ingest()
                 return new Literal(+token.value, token.value)
             case 'StringLiteral':
-                this.next()
+                this.ingest()
                 return new Literal(token.value, token.value)
             case 'BooleanLiteral':
-                this.next()
+                this.ingest()
                 return new Literal(token.value === 'true', token.value)
             case 'Null':
-                this.next()
+                this.ingest()
                 return new Literal(null, token.value)
             case 'Undefined':
-                this.next()
+                this.ingest()
                 return new Literal(undefined, token.value)
             case 'Identifier':
-                this.next()
+                this.ingest()
                 return new Identifier(token.value)
             case 'OpenParen':
-                this.next()
-                const expr = this.parseExpression()
-                if (this.currentToken.type !== 'CloseParen') {
-                    throw new SyntaxError('Expected closing parenthesis')
-                }
-                this.next()
-                return expr
+                this.ingest()
+                return this.parseOpenParens()
             default:
                 throw new Error(`Unexpected token: ${token.type}`)
         }
     }
 
-    private parseVariableDeclaration(
-        kind: 'let' | 'const' | 'var'
-    ): VariableDeclaration {
-        this.next()
+    private parseOpenParens(): Statement {
+        const statement = this.parseExpression()
+        if (this.currentToken.type !== 'CloseParen') {
+            throw new SyntaxError('Expected closing parenthesis')
+        }
+        this.ingest()
+        return statement
+    }
 
-        if (this.currentToken.type !== 'Identifier') {
-            console.error(
-                'Expected Identifier but got: ',
-                this.currentToken.type
+    private parseVariableDeclaration(
+        type: Extract<TokenType, 'Let' | 'Const' | 'Var'>
+    ): VariableDeclaration {
+        const kind = type.toLowerCase() as 'let' | 'const' | 'var'
+
+        let token = this.ingest()
+
+        if (token.type !== 'Identifier') {
+            throw new SyntaxError(
+                `Cannot declare a variable without an identifier`
             )
-            throw new TypeError(this.currentToken.type)
         }
 
-        const id = new Identifier(this.currentToken.value)
+        const id = new Identifier(token.value)
 
-        // we expect an equals sign after the identifier
-        this.next()
-        const equals = this.currentToken
+        token = this.ingest()
 
-        if (equals.type !== 'Equals') {
-            console.error('Expected Equals but got: ', equals.type)
-            throw new TypeError(equals.type)
+        // no we need a lookahead if there is a semicolon to terminate the statement
+        if (token.type === 'Semicolon') {
+            if (kind === 'const') {
+                console.error(
+                    'Cannot declare a constant without a value: ',
+                    token.value
+                )
+                throw new SyntaxError(
+                    'Cannot declare a constant without a value'
+                )
+            }
+
+            return new VariableDeclaration(id, undefined, kind)
+        }
+
+        if (this._tokens[this.current].type !== 'Equals') {
+            console.error(
+                'Expected Equals but got: ',
+                this._tokens[this.current].type
+            )
+            throw new TypeError(this._tokens[this.current].type)
         }
 
         // we know that the right side of the equals sign is the value
-        // which can be a single literal, binary expression, a function assinment, etc.
-        this.next()
+        // which can be an expression, literal, identifier, or undefined
+        this.ingest()
 
-        const init = this.parseToken()
+        const init = this.parseExpression()
 
-        return new VariableDeclaration(id, init, kind)
+        return new VariableDeclaration(
+            id,
+            init,
+            type.toLowerCase() as 'let' | 'const' | 'var'
+        )
+    }
+
+    private parseFunctionDeclaration(): FunctionDeclaration {
+        throw new Error('Method not implemented.')
+        let token = this.ingest()
+
+        if (token.type !== 'Identifier') {
+            throw new SyntaxError(`Expected Identifier but got: ${token.type}`)
+        }
+
+        const id = new Identifier(token.value)
+
+        token = this.ingest()
+
+        if (token.type !== 'OpenParen') {
+            throw new SyntaxError(`Expected OpenParen but got: ${token.type}`)
+        }
+
+        const args: Identifier[] = []
+
+        token = this.ingest()
+        while (token.type !== 'CloseParen') {
+            if (token.type === 'EOF') {
+                throw new SyntaxError(
+                    `Expected CloseParen but got: ${token.type}`
+                )
+            }
+
+            if (token.type === 'Identifier') {
+                args.push(new Identifier(token.value))
+            } else if (token.type !== 'Comma') {
+                throw new SyntaxError(
+                    `Invalid Argument Syntax: expected Identifier or Comma but got: ${token.type}`
+                )
+            }
+
+            token = this.ingest()
+        }
+
+        token = this.ingest()
+
+        if (token.type !== 'OpenBrace') {
+            throw new SyntaxError(`Expected OpenBrace but got: ${token.type}`)
+        }
+
+        token = this.ingest()
+
+        const block = new BlockStatement([])
+
+        while (token.type !== 'CloseBrace') {
+            if (token.type === 'EOF') {
+                throw new SyntaxError(
+                    `Expected CloseBrace but got: ${token.type}`
+                )
+            }
+            const node = this.parseStatement()
+
+            if (node != null) {
+                block.body.push(node)
+            }
+
+            token = this.ingest()
+        }
+
+        return new FunctionDeclaration(id, args, block)
     }
 }

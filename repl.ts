@@ -15,7 +15,7 @@ async function repl(): Promise<void> {
 
         const parser = new Parser(input)
 
-        console.log(parser.toAST())
+        console.log(parser.parse())
     }
 }
 

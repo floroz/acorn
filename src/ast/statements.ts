@@ -13,7 +13,7 @@ export class Program extends Statement {
 export class VariableDeclaration extends Statement {
     constructor(
         public id: Statement,
-        public init: Statement,
+        public init: Statement | undefined,
         public kind: 'let' | 'const' | 'var'
     ) {
         super('VariableDeclaration')

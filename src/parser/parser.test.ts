@@ -4,7 +4,7 @@ import { Parser } from './parser'
 describe('Parser', () => {
     describe('Literals', () => {
         it('should parse all primitives as literals', () => {
-            expect(new Parser('true').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('true').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -17,7 +17,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('false').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('false').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -30,7 +30,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('null').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('null').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -43,7 +43,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('undefined').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('undefined').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -56,7 +56,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('1').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('1').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -69,7 +69,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('"hello"').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('"hello"').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Literal {
@@ -82,7 +82,7 @@ describe('Parser', () => {
               }
             `)
 
-            expect(new Parser('x').toAST()).toMatchInlineSnapshot(`
+            expect(new Parser('x').parse()).toMatchInlineSnapshot(`
               Program {
                 "body": [
                   Identifier {
@@ -96,149 +96,426 @@ describe('Parser', () => {
         })
     })
 
-    describe.skip('Variable Declarations', () => {
+    describe('Binary Expressions', () => {
+        it('should parse an additive binary expression', () => {
+            expect(new Parser(`1 + 2`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": Literal {
+                    "raw": "1",
+                    "type": "Literal",
+                    "value": 1,
+                  },
+                  "operator": "+",
+                  "right": Literal {
+                    "raw": "2",
+                    "type": "Literal",
+                    "value": 2,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+        })
+
+        it('should parse a subtractive binary expression', () => {
+            expect(new Parser(`1 - 2`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": Literal {
+                    "raw": "1",
+                    "type": "Literal",
+                    "value": 1,
+                  },
+                  "operator": "-",
+                  "right": Literal {
+                    "raw": "2",
+                    "type": "Literal",
+                    "value": 2,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+
+            expect(new Parser(`1 - 2 - 3`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": BinaryExpression {
+                    "left": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "operator": "-",
+                    "right": Literal {
+                      "raw": "2",
+                      "type": "Literal",
+                      "value": 2,
+                    },
+                    "type": "BinaryExpression",
+                  },
+                  "operator": "-",
+                  "right": Literal {
+                    "raw": "3",
+                    "type": "Literal",
+                    "value": 3,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+        })
+
+        it('should parse a multiplicative binary expression', () => {
+            expect(new Parser(`1 * 2`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": Literal {
+                    "raw": "1",
+                    "type": "Literal",
+                    "value": 1,
+                  },
+                  "operator": "*",
+                  "right": Literal {
+                    "raw": "2",
+                    "type": "Literal",
+                    "value": 2,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+        })
+
+        it('should parse a division binary expression', () => {
+            expect(new Parser(`1 / 2`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": Literal {
+                    "raw": "1",
+                    "type": "Literal",
+                    "value": 1,
+                  },
+                  "operator": "/",
+                  "right": Literal {
+                    "raw": "2",
+                    "type": "Literal",
+                    "value": 2,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+        })
+
+        it('should parse a modulus binary expression', () => {
+            expect(new Parser(`1 % 2`).parse()).toMatchInlineSnapshot(`
+            Program {
+              "body": [
+                BinaryExpression {
+                  "left": Literal {
+                    "raw": "1",
+                    "type": "Literal",
+                    "value": 1,
+                  },
+                  "operator": "%",
+                  "right": Literal {
+                    "raw": "2",
+                    "type": "Literal",
+                    "value": 2,
+                  },
+                  "type": "BinaryExpression",
+                },
+              ],
+              "type": "Program",
+            }
+          `)
+        })
+    })
+
+    describe('Assignment Expressions', () => {
+        it('should parse an assignment expression', () => {
+            expect(new Parser(`x = 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  AssignmentExpression {
+                    "left": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "operator": "=",
+                    "right": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "type": "AssignmentExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+
+        it('should parse a compound assignment expression', () => {
+            expect(new Parser(`x += 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  AssignmentExpression {
+                    "left": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "operator": "+=",
+                    "right": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "type": "AssignmentExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`x -= 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  AssignmentExpression {
+                    "left": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "operator": "-=",
+                    "right": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "type": "AssignmentExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`x *= 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  AssignmentExpression {
+                    "left": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "operator": "*=",
+                    "right": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "type": "AssignmentExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`x /= 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  AssignmentExpression {
+                    "left": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "operator": "/=",
+                    "right": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "type": "AssignmentExpression",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+        })
+    })
+
+    describe('Variable Declarations', () => {
+        it('should parse an uninitialized declaration', () => {
+            expect(new Parser(`let x;`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": undefined,
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(new Parser(`var x;`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": undefined,
+                    "kind": "var",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
+
+            expect(() =>
+                new Parser(`const x;`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Cannot declare a constant without a value]`
+            )
+        })
+
         it('should parse a the let variable declaration of an identifier', () => {
-            const source = `let x = y`
-
-            const parser = new Parser(source)
-
-            const result = parser.toAST()
-
-            expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Identifier {
-                "name": "y",
-                "type": "Identifier",
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+            expect(new Parser(`let x = y`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Identifier {
+                      "name": "y",
+                      "type": "Identifier",
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should parse a the let variable declaration of a literal', () => {
-            const source = `let x = 1`
-
-            const parser = new Parser(source)
-
-            const result = parser.toAST()
-
-            expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Literal {
-                "raw": "1",
-                "type": "Literal",
-                "value": 1,
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+            expect(new Parser(`let x = 1`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Literal {
+                      "raw": "1",
+                      "type": "Literal",
+                      "value": 1,
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should parse a the let variable declaration of a string', () => {
-            const source = `let x = "hello"`
-
-            const parser = new Parser(source)
-
-            const result = parser.toAST()
-
-            expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Literal {
-                "raw": "hello",
-                "type": "Literal",
-                "value": "hello",
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+            expect(new Parser(`let x = "hello"`).parse())
+                .toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Literal {
+                      "raw": "hello",
+                      "type": "Literal",
+                      "value": "hello",
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should parse a the let variable declaration of a boolean', () => {
-            const source = `let x = true`
-
-            const parser = new Parser(source)
-
-            const result = parser.toAST()
-
-            expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Literal {
-                "raw": "true",
-                "type": "Literal",
-                "value": true,
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+            expect(new Parser(`let x = true`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Literal {
+                      "raw": "true",
+                      "type": "Literal",
+                      "value": true,
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should parse a the let variable declaration of a null', () => {
-            const source = `let x = null`
-
-            const parser = new Parser(source)
-
-            const result = parser.toAST()
-
-            expect(result).toMatchInlineSnapshot(`
-        Program {
-          "body": [
-            VariableDeclaration {
-              "id": Identifier {
-                "name": "x",
-                "type": "Identifier",
-              },
-              "init": Literal {
-                "raw": "null",
-                "type": "Literal",
-                "value": null,
-              },
-              "kind": "let",
-              "type": "VariableDeclaration",
-            },
-          ],
-          "type": "Program",
-        }
-      `)
+            expect(new Parser(`let x = null`).parse()).toMatchInlineSnapshot(`
+              Program {
+                "body": [
+                  VariableDeclaration {
+                    "id": Identifier {
+                      "name": "x",
+                      "type": "Identifier",
+                    },
+                    "init": Literal {
+                      "raw": "null",
+                      "type": "Literal",
+                      "value": null,
+                    },
+                    "kind": "let",
+                    "type": "VariableDeclaration",
+                  },
+                ],
+                "type": "Program",
+              }
+            `)
         })
 
         it('should parse a the let variable declaration of an undefined', () => {
@@ -246,7 +523,7 @@ describe('Parser', () => {
 
             const parser = new Parser(source)
 
-            const result = parser.toAST()
+            const result = parser.parse()
 
             expect(result).toMatchInlineSnapshot(`
         Program {
@@ -269,153 +546,70 @@ describe('Parser', () => {
         }
       `)
         })
+
+        it('should throw when the variable keyword is declared without nothing else', () => {
+            expect(() =>
+                new Parser(`let`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Cannot declare a variable without an identifier]`
+            )
+
+            expect(() =>
+                new Parser(`var`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Cannot declare a variable without an identifier]`
+            )
+
+            expect(() =>
+                new Parser(`const`).parse()
+            ).toThrowErrorMatchingInlineSnapshot(
+                `[SyntaxError: Cannot declare a variable without an identifier]`
+            )
+        })
     })
 
-    describe('Binary Expressions', () => {
-        it('should parse an additive binary expression', () => {
-            expect(new Parser(`1 + 2`).toAST()).toMatchInlineSnapshot(`
+    describe('Function Declarations', () => {
+        it.skip('should parse a function declaration', () => {
+            expect(new Parser(`function add(a, b) { return a + b }`).parse())
+                .toMatchInlineSnapshot(`
               Program {
                 "body": [
-                  BinaryExpression {
-                    "left": Literal {
-                      "raw": "1",
-                      "type": "Literal",
-                      "value": 1,
+                  FunctionDeclaration {
+                    "body": BlockStatement {
+                      "body": [
+                        ReturnStatement {
+                          "argument": BinaryExpression {
+                            "left": Identifier {
+                              "name": "a",
+                              "type": "Identifier",
+                            },
+                            "operator": "+",
+                            "right": Identifier {
+                              "name": "b",
+                              "type": "Identifier",
+                            },
+                            "type": "BinaryExpression",
+                          },
+                          "type": "ReturnStatement",
+                        },
+                      ],
+                      "type": "BlockStatement",
                     },
-                    "operator": "+",
-                    "right": Literal {
-                      "raw": "2",
-                      "type": "Literal",
-                      "value": 2,
+                    "id": Identifier {
+                      "name": "add",
+                      "type": "Identifier",
                     },
-                    "type": "BinaryExpression",
-                  },
-                ],
-                "type": "Program",
-              }
-            `)
-        })
-
-        it('should parse a subtractive binary expression', () => {
-            expect(new Parser(`1 - 2`).toAST()).toMatchInlineSnapshot(`
-              Program {
-                "body": [
-                  BinaryExpression {
-                    "left": Literal {
-                      "raw": "1",
-                      "type": "Literal",
-                      "value": 1,
-                    },
-                    "operator": "-",
-                    "right": Literal {
-                      "raw": "2",
-                      "type": "Literal",
-                      "value": 2,
-                    },
-                    "type": "BinaryExpression",
-                  },
-                ],
-                "type": "Program",
-              }
-            `)
-
-            expect(new Parser(`1 - 2 - 3`).toAST()).toMatchInlineSnapshot(`
-              Program {
-                "body": [
-                  BinaryExpression {
-                    "left": BinaryExpression {
-                      "left": Literal {
-                        "raw": "1",
-                        "type": "Literal",
-                        "value": 1,
+                    "params": [
+                      Identifier {
+                        "name": "a",
+                        "type": "Identifier",
                       },
-                      "operator": "-",
-                      "right": Literal {
-                        "raw": "2",
-                        "type": "Literal",
-                        "value": 2,
+                      Identifier {
+                        "name": "b",
+                        "type": "Identifier",
                       },
-                      "type": "BinaryExpression",
-                    },
-                    "operator": "-",
-                    "right": Literal {
-                      "raw": "3",
-                      "type": "Literal",
-                      "value": 3,
-                    },
-                    "type": "BinaryExpression",
-                  },
-                ],
-                "type": "Program",
-              }
-            `)
-        })
-
-        it('should parse a multiplicative binary expression', () => {
-            expect(new Parser(`1 * 2`).toAST()).toMatchInlineSnapshot(`
-              Program {
-                "body": [
-                  BinaryExpression {
-                    "left": Literal {
-                      "raw": "1",
-                      "type": "Literal",
-                      "value": 1,
-                    },
-                    "operator": "*",
-                    "right": Literal {
-                      "raw": "2",
-                      "type": "Literal",
-                      "value": 2,
-                    },
-                    "type": "BinaryExpression",
-                  },
-                ],
-                "type": "Program",
-              }
-            `)
-        })
-
-        it('should parse a division binary expression', () => {
-            expect(new Parser(`1 / 2`).toAST()).toMatchInlineSnapshot(`
-              Program {
-                "body": [
-                  BinaryExpression {
-                    "left": Literal {
-                      "raw": "1",
-                      "type": "Literal",
-                      "value": 1,
-                    },
-                    "operator": "/",
-                    "right": Literal {
-                      "raw": "2",
-                      "type": "Literal",
-                      "value": 2,
-                    },
-                    "type": "BinaryExpression",
-                  },
-                ],
-                "type": "Program",
-              }
-            `)
-        })
-
-        it('should parse a modulus binary expression', () => {
-            expect(new Parser(`1 % 2`).toAST()).toMatchInlineSnapshot(`
-              Program {
-                "body": [
-                  BinaryExpression {
-                    "left": Literal {
-                      "raw": "1",
-                      "type": "Literal",
-                      "value": 1,
-                    },
-                    "operator": "%",
-                    "right": Literal {
-                      "raw": "2",
-                      "type": "Literal",
-                      "value": 2,
-                    },
-                    "type": "BinaryExpression",
+                    ],
+                    "type": "FunctionDeclaration",
                   },
                 ],
                 "type": "Program",
